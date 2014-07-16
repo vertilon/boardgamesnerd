@@ -5,6 +5,7 @@ import gzip
 from bs4 import BeautifulSoup
 import sys
 import codecs
+import cgi
 
 if __name__ == "__main__":
     reload(sys)
@@ -24,7 +25,7 @@ class BoardGameParser:
             html_doc = response.read()
            
         #html_doc = str(html_doc)
-        self.soup = BeautifulSoup(html_doc)
+        self.soup = BeautifulSoup(html_doc) 
 
 
     def getNameOfGame(self):
@@ -75,18 +76,19 @@ class BoardGameParser:
         elif self.soup.find('div', class_='wiki') == None:
             return ''
         else:
-            return '\n'.join(str(self.soup.find('div', class_='wiki')).split('\n')[1:-1]).replace('\n','\\n')
-xmlFile = codecs.open('boardgamegeek.xml','w','utf-8')
-xmlFile= codecs.open('boardgamegeek.xml','r+','utf-8')
+            return '\n'.join(str(self.soup.find('div', class_='wiki').text).split('\n')[1:-1]).replace('\n','\\n')
+output='boardgamegeek_1-5k.xml'
+xmlFile = codecs.open(output,'w','utf-8')
+xmlFile= codecs.open(output,'r+','utf-8')
 if xmlFile.readline() == '<add>':
-    xmlFile = codecs.open ('boardgamegeek.xml','a','utf-8')
+    xmlFile = codecs.open (output,'a','utf-8')
 xmlFile.write('<add>\n')
 
 def writeFieldToXml(xmlFile, name, value):
-    string = ' <field name=\"'+name+'\">' + str(value) + '</field>\n'
+    string = ' <field name=\"'+name+'\">' + cgi.escape(str(value)) + '</field>\n'
     xmlFile.write(string)
 
-for i in xrange(1,10000):
+for i in xrange(1,5000):
 
     gurl=url+str(i)
 
@@ -97,28 +99,27 @@ for i in xrange(1,10000):
     game = BoardGameParser(gurl)
     
     #print "\tName of Game:", game.getNameOfGame()
-    writeFieldToXml(xmlFile, "Name", game.getNameOfGame())
+    writeFieldToXml(xmlFile, "name", game.getNameOfGame())
 
     #print '\tCategory:', game.getInfoByCategoryName('Category')
-    writeFieldToXml(xmlFile, "Category", game.getInfoByCategoryName('Category'))
+    writeFieldToXml(xmlFile, "category", game.getInfoByCategoryName('Category'))
 
     #print '\tDesigner:', game.getInfoByCategoryName('Designer')
-    writeFieldToXml(xmlFile, "Designer", game.getInfoByCategoryName('Designer'))
+    writeFieldToXml(xmlFile, "designer", game.getInfoByCategoryName('Designer'))
 
     #print '\tYear Published:', game.getInfoByCategoryName('Year Published')
-    writeFieldToXml(xmlFile, "Year Published", game.getInfoByCategoryName('Year Published'))
-    writeFieldToXml(xmlFile, "Numder of Players", game.getInfoByCategoryName('# of Players'.encode('utf-8')))
-    writeFieldToXml(xmlFile, "Playing Time", game.getInfoByCategoryName('Playing Time'))
-    writeFieldToXml(xmlFile, "Mfg Suggested Ages", game.getInfoByCategoryName('Mfg Suggested Ages'))
-    writeFieldToXml(xmlFile, "Mechanic", game.getInfoByCategoryName('Mechanic'))
-    writeFieldToXml(xmlFile, "Expansion", game.getInfoByCategoryName('Expansion'))
-    writeFieldToXml(xmlFile, "Website", game.getInfoByCategoryName('Website'))
-    writeFieldToXml(xmlFile, "Alternate Names", game.getInfoByCategoryName('Alternate Names'))
-    writeFieldToXml(xmlFile, "Expansion", game.getInfoByCategoryName('Expansion'))
-    writeFieldToXml(xmlFile, "Artist", game.getInfoByCategoryName('Artist'))
-    writeFieldToXml(xmlFile, "Publisher", game.getInfoByCategoryName('Publisher'))
-    writeFieldToXml(xmlFile, "Honors", game.getInfoByCategoryName('Honors'))
-    writeFieldToXml(xmlFile, "Description", game.getDescription())
+    writeFieldToXml(xmlFile, "year_published", game.getInfoByCategoryName('Year Published'))
+    writeFieldToXml(xmlFile, "numder_of_players", game.getInfoByCategoryName('# of Players'.encode('utf-8')))
+    writeFieldToXml(xmlFile, "playing_time", game.getInfoByCategoryName('Playing Time'))
+    writeFieldToXml(xmlFile, "mfg_suggested_ages", game.getInfoByCategoryName('Mfg Suggested Ages'))
+    writeFieldToXml(xmlFile, "mechanic", game.getInfoByCategoryName('Mechanic'))
+    writeFieldToXml(xmlFile, "expansion", game.getInfoByCategoryName('Expansion'))
+    writeFieldToXml(xmlFile, "website", game.getInfoByCategoryName('Website'))
+    writeFieldToXml(xmlFile, "alternate_names", game.getInfoByCategoryName('Alternate Names'))
+    writeFieldToXml(xmlFile, "artist", game.getInfoByCategoryName('Artist'))
+    writeFieldToXml(xmlFile, "publisher", game.getInfoByCategoryName('Publisher'))
+    writeFieldToXml(xmlFile, "honors", game.getInfoByCategoryName('Honors'))
+    writeFieldToXml(xmlFile, "description", game.getDescription())
 
     xmlFile.write('</doc>\n\n')
     print str(i) + ' entry has been processed'
